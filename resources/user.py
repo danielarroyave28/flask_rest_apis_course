@@ -5,11 +5,24 @@ from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from db import db
 from blocklist import BLOCKLIST
+import requests
+import os
 
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt, create_refresh_token, get_jwt_identity
 from passlib.hash import pbkdf2_sha256
 
 blp = Blueprint("Users", "users", description="Operations on users")
+
+
+def send_simple_message(to, subject, body):
+    domain = os.getenv("MAILGUN_DOMAIN")
+    return requests.post(
+		f"https://api.mailgun.net/v3/{domain}/messages",
+		auth=("api", os.getenv("YOUR_API_KEY")),
+		data={"from": "Daniel Arroyave <mailgun@{domain}>",
+			"to": [to],
+			"subject": subject,
+			"text": body})
 
 
 @blp.route("/register")
