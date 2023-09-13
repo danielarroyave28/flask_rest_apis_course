@@ -3,6 +3,7 @@ from flask_smorest import Api
 from db import db
 import models
 import os
+from dotenv import load_dotenv
 
 import secrets
 from blocklist import BLOCKLIST
@@ -17,6 +18,7 @@ from flask_migrate import Migrate
 
 def create_app(db_url=None):
     app = Flask(__name__)
+    load_dotenv()
 
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "Stores REST API"
