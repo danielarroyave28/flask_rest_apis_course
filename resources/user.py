@@ -9,6 +9,9 @@ from blocklist import BLOCKLIST
 import requests
 import os
 
+import redis
+from rq import Queue
+
 from tasks import send_user_registration_email
 
 from sqlalchemy import or_
@@ -18,6 +21,10 @@ from passlib.hash import pbkdf2_sha256
 
 blp = Blueprint("Users", "users", description="Operations on users")
 
+connection = redis.from_url(
+    os.getenv("REDIS_URL")
+)  # Get this from Render.com or run in Docker
+queue = Queue("emails", connection=connection)
 
 
 @blp.route("/register")
@@ -41,7 +48,7 @@ class UserRegister(MethodView):
         db.session.add(user)
         db.session.commit()
 
-        current_app.queue.enqueue(send_user_registration_email, user.email, user.username)
+        queue.enqueue(send_user_registration_email, user.email, user.username)
 
         return {"message": "User created successfully."}, 201
     
